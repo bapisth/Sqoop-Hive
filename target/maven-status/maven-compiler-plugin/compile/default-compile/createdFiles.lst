@@ -1,0 +1,11 @@
+MaxWidgetId$MaxWidgetReducer.class
+com/hemendra/sqooptest/ExportStressTest.class
+com/hemendra/sqooptest/SqoopHiveTest.class
+MaxWidgetIdGenericAvro$MaxWidgetMapper.class
+MaxWidgetIdGenericAvro$MaxWidgetReducer.class
+MaxWidgetIdGenericAvro.class
+com/hemendra/sqooptest/SqoopTest.class
+com/hemendra/sqoop/uitl/SqoopUtility.class
+MaxWidgetId.class
+MaxWidgetId$MaxWidgetMapper.class
+Widget.class
