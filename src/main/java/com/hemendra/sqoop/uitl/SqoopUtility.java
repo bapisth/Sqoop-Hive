@@ -2,20 +2,28 @@ package com.hemendra.sqoop.uitl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
-import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
 
+import com.cloudera.sqoop.Sqoop;
 import com.cloudera.sqoop.SqoopOptions;
 import com.cloudera.sqoop.SqoopOptions.IncrementalMode;
 import com.cloudera.sqoop.tool.ImportTool;
 import com.cloudera.sqoop.tool.SqoopTool;
 
-public class SqoopUtility {
+public class SqoopUtility extends Configured {
 
 	private static SqoopOptions SqoopOptions = null;
-	private static final String connectionString = "jdbc:mysql://192.168.1.224:3306/test_ananya";
+	private static final String connectionString = "";
+	private static final String connectionStringMYSQL = "jdbc:mysql://192.168.1.224:3306/test_ananya";
+	private static final String connectionStringPOSTGRE_SQL = "jdbc:postgresql://192.168.1.224:5432/ims_prod";
 	private static final String databaseUsername = "karadonga";
 	private static final String databasePassword = "Karadonga1";
+	
+	private static final String databaseUsernamePostgres = "postgres";
+	private static final String databasePasswordPostgres = "karadonga@1";
 
 	static {
 		SqoopOptions = new SqoopOptions();
@@ -33,11 +41,34 @@ public class SqoopUtility {
 	public static String getDatabasepassword() {
 		return databasePassword;
 	}
+	
+
+	public static String getDatabaseusernamepostgres() {
+		return databaseUsernamePostgres;
+	}
+
+	public static String getDatabasepasswordpostgres() {
+		return databasePasswordPostgres;
+	}
+
+	public static String getConnectionstringmysql() {
+		return connectionStringMYSQL;
+	}
+
+	public static String getConnectionstringpostgreSql() {
+		return connectionStringPOSTGRE_SQL;
+	}
 
 	private static void setUp() {
-		SqoopOptions.setConnectString(getConnectionstring());
-		SqoopOptions.setUsername(getDatabaseusername());
-		SqoopOptions.setPassword(getDatabasepassword());
+		SqoopOptions.setConnectString(getConnectionstringpostgreSql());
+		//SqoopOptions.setConnectString(getConnectionstring());
+		//SqoopOptions.setConnectString(getConnectionstring());
+		
+		//SqoopOptions.setUsername(getDatabaseusername());
+		//SqoopOptions.setPassword(getDatabasepassword());
+		
+		SqoopOptions.setUsername(getDatabaseusernamepostgres());
+		SqoopOptions.setPassword(getDatabasepasswordpostgres());
 	}
 
 	private static int runIt() {
@@ -105,61 +136,115 @@ public class SqoopUtility {
 	 * 
 	 * @return
 	 */
-	private static int performHdfsImport() {
+	@SuppressWarnings("deprecation")
+	private static int performHdfsImportHem() {
 		SqoopTool tool = new ImportTool();
 		String[] args = { "--connection-manager", "com.mysql.jdbc.Driver", "--connect",
-				"mysql://192.168.1.224:3306/test_ananya", "--username", "karadonga", "--password", "Karadonga1",
-				"--table", "employee", "--target-dir", "/myJavaSqoopTest" };
+				"mysql://192.168.1.224:3306/test_ananya", "--driver", "com.mysql.jdbc.Driver", "--username",
+				"karadonga", "--password", "Karadonga1", "--table", "employee", "--target-dir", "myJavaSqoopTest" };
 
-		List<String> sqoopImportArgs = new ArrayList<String>();
-		/*sqoopImportArgs.add("--connection-manager");
-		sqoopImportArgs.add("com.mysql.jdbc.Driver");*/
-
-		sqoopImportArgs.add("--connect");
-		sqoopImportArgs.add("jdbc:mysql://192.168.1.224:3306/test_ananya");
-
-		sqoopImportArgs.add("--username");
-		sqoopImportArgs.add("karadonga");
-
-		sqoopImportArgs.add("--password");
-		sqoopImportArgs.add("Karadonga1");
-		
-		
-		sqoopImportArgs.add("--hadoop-home");
-		sqoopImportArgs.add(System.getenv("HADOOP_HOME"));
-		
-		sqoopImportArgs.add("--hadoop-mapred-home");
-		sqoopImportArgs.add(System.getenv("HADOOP_MAPRED_HOME"));
-
-		sqoopImportArgs.add("--table");
-		sqoopImportArgs.add("employee");
-
-		sqoopImportArgs.add("--target-dir");
-		sqoopImportArgs.add("mysqoopPlace");
-		
-		
-		
-		// --hive-import --create-hive-table --hive-table sqoopdb.mysqlWorld
-		
-		sqoopImportArgs.add("--hive-import");
-		sqoopImportArgs.add("--create-hive-table");
-		sqoopImportArgs.add("--hive-table");
-		sqoopImportArgs.add("sqoopdb.hemufromjava");
-
-		sqoopImportArgs.add("-m");
-		sqoopImportArgs.add("1");
-
-		String[] importArgsArr = sqoopImportArgs.toArray(new String[sqoopImportArgs.size()]);
+		/*
+		 * String hadoopHome = System.getenv("HADOOP_HOME");
+		 * 
+		 * List<String> sqoopImportArgs = new ArrayList<String>();
+		 * sqoopImportArgs.add("--connection-manager");
+		 * sqoopImportArgs.add("com.mysql.jdbc.Driver");
+		 * 
+		 * sqoopImportArgs.add("--connect");
+		 * sqoopImportArgs.add("jdbc:mysql://192.168.1.224:3306/test_ananya");
+		 * 
+		 * sqoopImportArgs.add("--username"); sqoopImportArgs.add("karadonga");
+		 * 
+		 * sqoopImportArgs.add("--password"); sqoopImportArgs.add("Karadonga1");
+		 * 
+		 * 
+		 * sqoopImportArgs.add("--hadoop-home");
+		 * 
+		 * sqoopImportArgs.add(hadoopHome);
+		 * 
+		 * sqoopImportArgs.add("--hadoop-mapred-home");
+		 * sqoopImportArgs.add(hadoopHome + "/share/hadoop/mapreduce");
+		 * 
+		 * sqoopImportArgs.add("--table"); sqoopImportArgs.add("employee");
+		 * 
+		 * sqoopImportArgs.add("--target-dir");
+		 * sqoopImportArgs.add("mysqoopPlace2");
+		 * 
+		 * 
+		 * 
+		 * // --hive-import --create-hive-table --hive-table sqoopdb.mysqlWorld
+		 * 
+		 * sqoopImportArgs.add("--hive-import");
+		 * sqoopImportArgs.add("--create-hive-table");
+		 * sqoopImportArgs.add("--hive-table");
+		 * sqoopImportArgs.add("sqoopdb.hemufromjava");
+		 * 
+		 * sqoopImportArgs.add("-m"); sqoopImportArgs.add("1");
+		 * 
+		 * String[] importArgsArr = sqoopImportArgs.toArray(new
+		 * String[sqoopImportArgs.size()]);
+		 */
 
 		SqoopOptions options = new SqoopOptions();
+		// Configuration conf = options.getConf();
 
 		try {
-			options = tool.parseArguments(importArgsArr, null, options, false);
+			options = tool.parseArguments(args, null, options, false);
 			tool.validateOptions(options);
 		} catch (Exception e) {
 			System.err.println(e.getMessage());
 			// throw new Exception(e.message);
 		}
+
+		// String HadoopNativeLibrary = hadoopHome + "/lib/native";
+
+		// conf.set("tmpJars", HadoopNativeLibrary + ",
+		// -Djava.library.path="+HadoopNativeLibrary);
+
+		// @SuppressWarnings("unused")
+		// int runTool = Sqoop.runTool(importArgsArr, conf);
+
+		// 16-Oct-2017
+
+		// return 0;
+
+		return tool.run(options);
+	}
+
+	private static int performHdfsImport() {
+
+		SqoopTool tool = new ImportTool();
+		/*String[] args = { "--driver", "com.mysql.jdbc.Driver", 
+				"--connect", "jdbc:mysql://192.168.1.224:3306/test_ananya", 
+				"--username", "karadonga",
+				"--password", "Karadonga1", 
+				"--table", "employee", 
+				"--target-dir", "test/broap" }; Working Partially*/
+		
+		String hadoopHome = System.getenv("HADOOP_HOME");
+		String hdpMapRedHome = hadoopHome + "/share/hadoop/mapreduce";
+		
+		String[] args = { 
+				"--driver", "com.mysql.jdbc.Driver",
+				"--hadoop-home", hadoopHome,
+				"--hadoop-mapred-home", hdpMapRedHome,
+				
+				"--connect", "jdbc:mysql://192.168.1.224:3306/test_ananya", 
+				"--username", "karadonga",
+				"--password", "Karadonga1", 
+				"--table", "employee", 
+				"--target-dir", UUID.randomUUID().toString()+"test/broaap" }; 
+
+		SqoopOptions options = new SqoopOptions();
+
+		try {
+			options = tool.parseArguments(args, null, options, false);
+			tool.validateOptions(options);
+		} catch (Exception e) {
+			System.err.println(e.getMessage());
+		}
+		tool.run(options);
+
 		return tool.run(options);
 	}
 
@@ -178,26 +263,28 @@ public class SqoopUtility {
 		/**
 		 * Transfering data directly to Hive table
 		 */
+
 		
-		 setUp(); String tableName = "employee";
-		 TransferringEntireTableSpecificDirHive(tableName, "asadtsdfal/input3");
+		 setUp(); 
+		 String tableName = "employee";
+		 String tableNameInPosGresql = "mdm_incident_hi_detail";
+		 TransferringEntireTableSpecificDirHive(tableNameInPosGresql,"result/data/"+ UUID.randomUUID().toString()); 
 		 runIt();
-		
-		
+		 
 
 		/**
 		 * Load Entire table
 		 */
 
-		/*System.out.println(SqoopOptions.getHadoopMapRedHome());
-
-		System.out.println(System.getenv("HADOOP_COMMON_LIB_NATIVE_DIR"));
-		System.out.println(System.getenv("HADOOP_OPTS"));
-
-		setUp();
-		String tableName = "employee";
-		TransferringEntireTable(tableName);
-		runIt();*/
+		/*
+		 * System.out.println(SqoopOptions.getHadoopMapRedHome());
+		 * 
+		 * System.out.println(System.getenv("HADOOP_COMMON_LIB_NATIVE_DIR"));
+		 * System.out.println(System.getenv("HADOOP_OPTS"));
+		 * 
+		 * setUp(); String tableName = "employee";
+		 * TransferringEntireTable(tableName); runIt();
+		 */
 
 	}
 
